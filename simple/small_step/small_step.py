@@ -127,7 +127,6 @@ class While:
         return True
     
     def reduce(self, environment):
-        # time.sleep(2)
         return If(self.condition, Sequence(self.body, self), DoNothing()), environment
 
 
@@ -207,9 +206,9 @@ if __name__ == "__main__":
     """
     sum10 = 0
     i = 0    
-        while i < 11:
-            sum10 += i
-            i += 1
+    while i < 11:
+        sum10 += i
+        i += 1
     """
 
     Machine(
