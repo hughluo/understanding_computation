@@ -105,7 +105,6 @@ class LessThan:
             return Boolean(self.left.value < self.right.value)
 
 
-
 # Statements
 
 class DoNothing:
@@ -198,7 +197,6 @@ class While:
     
     def reduce(self, environment):
         return If(self.condition, Sequence(self.body, self), DoNothing()), environment
-
 
 
 if __name__ == "__main__":

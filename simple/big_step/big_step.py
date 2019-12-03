@@ -2,8 +2,6 @@ class Environment(dict):
     def __str__(self):
         str__ = '{' + ', '.join([f'{k}: {v}'for k, v in self.items()]) + '}'
         return f'{str__}'
-
-
   
 
 # Expressions
@@ -141,8 +139,6 @@ class While:
             return self.evaluate(self.body.evaluate(environment))
         else:
             return environment
-
-
 
 
 if __name__ == "__main__":
