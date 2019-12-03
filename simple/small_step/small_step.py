@@ -24,19 +24,7 @@ class Environment(dict):
         return f'{str__}'
 
 
-class DoNothing:
-    def __init__(self):
-        pass
-
-    def __str__(self):
-        return f'<do nothing>'
-    
-    def __eq__(self, other):
-        return isinstance(other, DoNothing)
-    
-    def is_reducible(self):
-        return False
-
+# Expressions
 
 class Variable:
     def __init__(self, name):
@@ -50,6 +38,88 @@ class Variable:
     
     def reduce(self, environment):
         return environment[self.name]
+
+
+class Number:
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return f'<{self.value}>'
+
+    def is_reducible(self):
+        return False
+
+
+class Add:
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def __str__(self):
+        return f'{self.left} + {self.right}'
+
+    def is_reducible(self):
+        return True    
+
+    def reduce(self, environment):
+        if self.left.is_reducible():
+            return Add(self.left.reduce(environment), self.right)
+        elif self.right.is_reducible():
+            return Add(self.left, self.right.reduce(environment))
+        else:
+            return Number(self.left.value + self.right.value)
+
+
+class Boolean:
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return f'<{self.value}>'
+    
+    def __eq__(self, other):
+        return self.value == other.value
+    
+    def is_reducible(self):
+        return False
+
+
+class LessThan:
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+    
+    def __str__(self):
+        return f'{self.left} < {self.right}'
+    
+    def is_reducible(self):
+        return True
+    
+    def reduce(self,environment):
+        if self.left.is_reducible():
+            return LessThan(self.left.reduce(environment), self.right)
+        elif self.right.is_reducible():
+            return LessThan(self.left, self.right.reduce(environment))
+        else:
+            return Boolean(self.left.value < self.right.value)
+
+
+
+# Statements
+
+class DoNothing:
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return f'<do nothing>'
+    
+    def __eq__(self, other):
+        return isinstance(other, DoNothing)
+    
+    def is_reducible(self):
+        return False
 
 
 class Assign:
@@ -129,70 +199,6 @@ class While:
     def reduce(self, environment):
         return If(self.condition, Sequence(self.body, self), DoNothing()), environment
 
-
-class Number:
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return f'<{self.value}>'
-
-    def is_reducible(self):
-        return False
-
-
-class Add:
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-
-    def __str__(self):
-        return f'{self.left} + {self.right}'
-
-    def is_reducible(self):
-        return True    
-
-    def reduce(self, environment):
-        if self.left.is_reducible():
-            return Add(self.left.reduce(environment), self.right)
-        elif self.right.is_reducible():
-            return Add(self.left, self.right.reduce(environment))
-        else:
-            return Number(self.left.value + self.right.value)
-
-
-class Boolean:
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return f'<{self.value}>'
-    
-    def __eq__(self, other):
-        return self.value == other.value
-    
-    def is_reducible(self):
-        return False
-
-
-class LessThan:
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-    
-    def __str__(self):
-        return f'{self.left} < {self.right}'
-    
-    def is_reducible(self):
-        return True
-    
-    def reduce(self,environment):
-        if self.left.is_reducible():
-            return LessThan(self.left.reduce(environment), self.right)
-        elif self.right.is_reducible():
-            return LessThan(self.left, self.right.reduce(environment))
-        else:
-            return Boolean(self.left.value < self.right.value)
 
 
 if __name__ == "__main__":
