@@ -1,5 +1,7 @@
 # Nondeterministic Finite Automata
 
+Any NFA can be translated to a DFA.
+
 * NFA
 * NFA-Epsilon
 
