@@ -68,7 +68,7 @@ class NFADesign:
     def to_nfa(self):
         return NFA({self.start_state}, self.accept_states, self.rulebook)
     
-    def accepts(self, string):
+    def is_accepts(self, string):
         nfa = self.to_nfa()
         nfa.read_string(string)
         return nfa.accepting()
@@ -104,6 +104,6 @@ if __name__ == "__main__":
 
     print('-' * 20)
     nfa_design = NFADesign(1, [4], rulebook)
-    print(nfa_design.accepts('bab'))    # True
-    print(nfa_design.accepts('bbbbb'))  # True
-    print(nfa_design.accepts('bbabb'))  # False
+    print(nfa_design.is_accepts('bab'))    # True
+    print(nfa_design.is_accepts('bbbbb'))  # True
+    print(nfa_design.is_accepts('bbabb'))  # False
