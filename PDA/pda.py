@@ -68,7 +68,7 @@ class DPDA:
         self.current_configuration = rulebook.follow_free_moves(self.current_configuration)
         return self.current_configuration
 
-    def accepting(self):
+    def is_accepting(self):
         self.current_configuration_()
         return self.current_configuration.state in self.accept_states
 
@@ -100,7 +100,7 @@ class DPDADesign:
     def accepts(self, string):
         dpda = self.to_dpda()
         dpda.read_string(string)
-        return dpda.accepting()
+        return dpda.is_accepting()
     
     def to_dpda(self):
         start_stack = Stack([self.bottom_character])
@@ -134,11 +134,11 @@ if __name__ == "__main__":
 
     print('-' * 20)
     dpda = DPDA(PDAConfiguration(1, Stack(['$'])), [1], rulebook)
-    print(dpda.accepting())
-    assert dpda.accepting()
+    print(dpda.is_accepting())
+    assert dpda.is_accepting()
     dpda.read_string('(()')
-    print(dpda.accepting())
-    assert not dpda.accepting()
+    print(dpda.is_accepting())
+    assert not dpda.is_accepting()
     print(dpda.current_configuration)
     assert str(dpda.current_configuration) == "<PDAConfiguration state=2, stack=<Stack (b)$>>"
 
@@ -150,8 +150,8 @@ if __name__ == "__main__":
     print('-' * 20)
     dpda = DPDA(PDAConfiguration(1, Stack(['$'])), [1], rulebook)
     dpda.read_string('(()(')
-    print(dpda.accepting())
-    assert not dpda.accepting()
+    print(dpda.is_accepting())
+    assert not dpda.is_accepting()
     print(dpda.current_configuration)
     assert str(dpda.current_configuration) == "<PDAConfiguration state=2, stack=<Stack (b)b$>>"
 
@@ -164,6 +164,6 @@ if __name__ == "__main__":
     print('-' * 20)
     dpda = DPDA(PDAConfiguration(1, Stack(['$'])), [1], rulebook)
     dpda.read_string('())')
-    assert not dpda.accepting()
+    assert not dpda.is_accepting()
     assert dpda.is_stuck()
     assert not dpda_design.accepts('())')
