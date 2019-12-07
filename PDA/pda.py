@@ -42,7 +42,13 @@ class DPDARulebook:
                 return rule
     
     def applies_to(self, configuration, character):
-        pass
+        return self.rule_for(configuration, character) is not None
+    
+    def follow_free_moves(self, configuration):
+        if self.applies_to(configuration, None):
+            return self.follow_free_moves(self.next_configuration(configuration, None))
+        else:
+            return configuration
 
 
 class DPDA:
@@ -50,11 +56,17 @@ class DPDA:
         self.current_configuration = current_configuration
         self.accept_states = accept_states
         self.rulebook = rulebook
+
+    def current_configuration_(self):
+        self.current_configuration = rulebook.follow_free_moves(self.current_configuration)
+        return self.current_configuration
+
     def accepting(self):
+        self.current_configuration_()
         return self.current_configuration.state in self.accept_states
 
     def read_character(self, character):
-        self.current_configuration = rulebook.next_configuration(self.current_configuration, character)
+        self.current_configuration = rulebook.next_configuration(self.current_configuration_(), character)
     
     def read_string(self, string):
         for char in string:
@@ -94,3 +106,22 @@ if __name__ == "__main__":
     assert not dpda.accepting()
     print(dpda.current_configuration)
     assert str(dpda.current_configuration) == "<PDAConfiguration state=2, stack=<Stack (b)$>>"
+
+    print('-' * 20)
+    configuration = PDAConfiguration(2, Stack(['$']))
+    print(rulebook.follow_free_moves(configuration))
+    assert str(rulebook.follow_free_moves(configuration)) == "<PDAConfiguration state=1, stack=<Stack ($)>>"
+
+    print('-' * 20)
+    dpda = DPDA(PDAConfiguration(1, Stack(['$'])), [1], rulebook)
+    dpda.read_string('(()(')
+    print(dpda.accepting())
+    assert not dpda.accepting()
+    print(dpda.current_configuration)
+    assert str(dpda.current_configuration) == "<PDAConfiguration state=2, stack=<Stack (b)b$>>"
+
+    dpda.read_string('))()')
+    print(dpda.accepting())
+    assert dpda.accepting()
+    print(dpda.current_configuration)
+    assert str(dpda.current_configuration) == "<PDAConfiguration state=1, stack=<Stack ($)>>"
