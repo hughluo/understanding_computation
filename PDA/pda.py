@@ -40,6 +40,9 @@ class DPDARulebook:
         for rule in self.rules:
             if rule.applies_to(configuration, character):
                 return rule
+    
+    def applies_to(self, configuration, character):
+        pass
 
 
 class DPDA:
@@ -47,6 +50,15 @@ class DPDA:
         self.current_configuration = current_configuration
         self.accept_states = accept_states
         self.rulebook = rulebook
+    def accepting(self):
+        return self.current_configuration.state in self.accept_states
+
+    def read_character(self, character):
+        self.current_configuration = rulebook.next_configuration(self.current_configuration, character)
+    
+    def read_string(self, string):
+        for char in string:
+            self.read_character(char)
     
 
 if __name__ == "__main__":
@@ -73,4 +85,12 @@ if __name__ == "__main__":
     print(configuration)
     assert str(configuration) == "<PDAConfiguration state=2, stack=<Stack (b)$>>"
 
-
+    print('-' * 20)
+    dpda = DPDA(PDAConfiguration(1, Stack(['$'])), [1], rulebook)
+    print(dpda.accepting())
+    assert dpda.accepting()
+    dpda.read_string('(()')
+    print(dpda.accepting())
+    assert not dpda.accepting()
+    print(dpda.current_configuration)
+    assert str(dpda.current_configuration) == "<PDAConfiguration state=2, stack=<Stack (b)$>>"
