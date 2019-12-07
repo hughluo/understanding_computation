@@ -4,6 +4,9 @@ class PDAConfiguration:
     def __init__(self, state, stack):
         self.state = state
         self.stack = stack
+    
+    def __str__(self):
+        return f'<PDAConfiguration state={self.state}, stack={str(self.stack)}>'
 
 
 class PDARule:
@@ -17,9 +20,57 @@ class PDARule:
     def applies_to(self, configuration, character):
         return self.state == configuration.state and self.pop_character == configuration.stack.top() and \
             self.character == character
+    
+    def follow(self, configuration):
+        return PDAConfiguration(self.next_state, self.next_stack(configuration))
+    
+    def next_stack(self, configuration):
+        popped_stack = configuration.stack.pop()
+        return Stack(self.push_character + popped_stack.stk)
 
+
+class DPDARulebook:
+    def __init__(self, rules):
+        self.rules = rules
+    
+    def next_configuration(self, configuration, character):
+        return self.rule_for(configuration, character).follow(configuration)
+    
+    def rule_for(self, configuration, character):
+        for rule in self.rules:
+            if rule.applies_to(configuration, character):
+                return rule
+
+
+class DPDA:
+    def __init__(self, current_configuration, accept_states, rulebook):
+        self.current_configuration = current_configuration
+        self.accept_states = accept_states
+        self.rulebook = rulebook
+    
 
 if __name__ == "__main__":
+    print('-' * 20)
     rule = PDARule(1, '(', 2, '$', ['b', '$'])
     configuration = PDAConfiguration(1, Stack(['$']))
     print(rule.applies_to(configuration, '('))  # True
+    print(rule.follow(configuration))
+    
+    print('-' * 20)
+    rulebook = DPDARulebook([
+        PDARule(1, '(', 2, '$', ['b', '$']),
+        PDARule(2, '(', 2, 'b', ['b', 'b']),
+        PDARule(2, ')', 2, 'b', []),
+        PDARule(2, None, 1, '$', ['$']),
+    ])
+    configuration = rulebook.next_configuration(configuration, '(')
+    print(configuration)
+    assert str(configuration) == "<PDAConfiguration state=2, stack=<Stack (b)$>>"
+    configuration = rulebook.next_configuration(configuration, '(')
+    print(configuration)
+    assert str(configuration) == "<PDAConfiguration state=2, stack=<Stack (b)b$>>"
+    configuration = rulebook.next_configuration(configuration, ')')
+    print(configuration)
+    assert str(configuration) == "<PDAConfiguration state=2, stack=<Stack (b)$>>"
+
+
