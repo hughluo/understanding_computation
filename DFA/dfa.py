@@ -4,7 +4,7 @@ class FARule:
         self.character = character
         self.next_state = next_state
     
-    def applies_to(self, state, character):
+    def is_applies_to(self, state, character):
         return self.state == state and self.character == character
     
     def follow(self):
@@ -23,7 +23,7 @@ class DFARulebook:
     
     def rule_for(self, state, character):
         for rule in self.rules:
-            if rule.applies_to(state, character):
+            if rule.is_applies_to(state, character):
                 return rule
 
 
@@ -33,7 +33,7 @@ class DFA:
         self.accept_states = accept_states
         self.rulebook = rulebook
     
-    def accepting(self):
+    def is_accepting(self):
         return self.current_state in self.accept_states
 
     def read_character(self, character):
@@ -55,15 +55,15 @@ class DFADesign:
     def to_dfa(self):
         return DFA(self.start_state, self.accept_states, self.rulebook)
     
-    def accepts(self, string):
+    def is_accepts(self, string):
         dfa = self.to_dfa()
         dfa.read_string(string)
-        return dfa.accepting()
+        return dfa.is_accepting()
 
 
 if __name__ == "__main__":
 
-    # DFA that only accepts character stream contains sequence 'ab'
+    # DFA that only is_accepts character stream contains sequence 'ab'
     rulebook = DFARulebook([
         FARule(1, 'a', 2), FARule(1, 'b', 1),
         FARule(2, 'a', 2), FARule(2, 'b', 3),
@@ -77,23 +77,23 @@ if __name__ == "__main__":
     
     print('-' * 20)
     dfa = DFA(1, [3], rulebook)
-    print(dfa.accepting())  # False
+    print(dfa.is_accepting())  # False
     dfa.read_character('b')
-    print(dfa.accepting())  # False
+    print(dfa.is_accepting())  # False
     dfa.read_character('a')
-    print(dfa.accepting())  # False
+    print(dfa.is_accepting())  # False
     dfa.read_character('b')
-    print(dfa.accepting())  # True
+    print(dfa.is_accepting())  # True
     
     print('-' * 20)
     dfa = DFA(1, [3], rulebook)
     dfa.read_string('aaabbbaaa')
-    print(dfa.accepting()) # True
+    print(dfa.is_accepting()) # True
     dfa = DFA(1, [3], rulebook)
     dfa.read_string('bbbbbbbbaa')
-    print(dfa.accepting()) # False
+    print(dfa.is_accepting()) # False
     
     print('-' * 20)
     dfa_desgin = DFADesign(1, [3], rulebook)
-    print(dfa_desgin.accepts('aaabbbbaaa')) # True
-    print(dfa_desgin.accepts('bbbbbbbbaa')) # False
+    print(dfa_desgin.is_accepts('aaabbbbaaa')) # True
+    print(dfa_desgin.is_accepts('bbbbbbbbaa')) # False
