@@ -97,7 +97,7 @@ class DPDADesign:
         self.accept_states = accept_states
         self.rulebook = rulebook
     
-    def accepts(self, string):
+    def is_accepts(self, string):
         dpda = self.to_dpda()
         dpda.read_string(string)
         return dpda.is_accepting()
@@ -157,13 +157,13 @@ if __name__ == "__main__":
 
     print('-' * 20)
     dpda_design = DPDADesign(1, '$', [1], rulebook)
-    assert dpda_design.accepts('(((((((())))))))')
-    assert dpda_design.accepts('()(())(())((()))')
-    assert not dpda_design.accepts('(()(()(()()(()()))()')
+    assert dpda_design.is_accepts('(((((((())))))))')
+    assert dpda_design.is_accepts('()(())(())((()))')
+    assert not dpda_design.is_accepts('(()(()(()()(()()))()')
 
     print('-' * 20)
     dpda = DPDA(PDAConfiguration(1, Stack(['$'])), [1], rulebook)
     dpda.read_string('())')
     assert not dpda.is_accepting()
     assert dpda.is_stuck()
-    assert not dpda_design.accepts('())')
+    assert not dpda_design.is_accepts('())')
