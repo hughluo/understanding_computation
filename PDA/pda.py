@@ -71,7 +71,25 @@ class DPDA:
     def read_string(self, string):
         for char in string:
             self.read_character(char)
+
+
+class DPDADesign:
+    def __init__(self, start_state, bottom_character, accept_states, rulebook):
+        self.start_state = start_state
+        self.bottom_character = bottom_character
+        self.accept_states = accept_states
+        self.rulebook = rulebook
     
+    def accepts(self, string):
+        dpda = self.to_dpda()
+        dpda.read_string(string)
+        return dpda.accepting()
+    
+    def to_dpda(self):
+        start_stack = Stack([self.bottom_character])
+        start_configuration = PDAConfiguration(self.start_state, start_stack)
+        return DPDA(start_configuration, self.accept_states, self.rulebook)
+
 
 if __name__ == "__main__":
     print('-' * 20)
@@ -125,3 +143,9 @@ if __name__ == "__main__":
     assert dpda.accepting()
     print(dpda.current_configuration)
     assert str(dpda.current_configuration) == "<PDAConfiguration state=1, stack=<Stack ($)>>"
+
+    print('-' * 20)
+    dpda_design = DPDADesign(1, '$', [1], rulebook)
+    assert dpda_design.accepts('(((((((())))))))')
+    assert dpda_design.accepts('()(())(())((()))')
+    assert not dpda_design.accepts('(()(()(()()(()()))()')
