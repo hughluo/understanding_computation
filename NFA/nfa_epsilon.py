@@ -57,7 +57,7 @@ class NFA:
         self.current_states = self.rulebook.follow_free_moves(self.current_states)
         return self.current_states
 
-    def accepting(self):
+    def is_accepting(self):
         intersect = self.current_states.intersection(self.accept_states)
         return len(intersect) > 0
 
@@ -83,7 +83,7 @@ class NFADesign:
     def accepts(self, string):
         nfa = self.to_nfa()
         nfa.read_string(string)
-        return nfa.accepting()
+        return nfa.is_accepting()
 
 
 if __name__ == "__main__":
