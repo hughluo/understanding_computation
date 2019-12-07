@@ -4,7 +4,7 @@ class FARule:
         self.character = character
         self.next_state = next_state
     
-    def applies_to(self, state, character):
+    def is_applies_to(self, state, character):
         return self.state == state and self.character == character
     
     def follow(self):
@@ -42,7 +42,7 @@ class NFARulebook:
     def rules_for(self, state, character):
         res = []
         for rule in self.rules:
-            if rule.applies_to(state, character):
+            if rule.is_applies_to(state, character):
                 res.append(rule)
         return res
 
