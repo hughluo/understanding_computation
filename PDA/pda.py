@@ -1,12 +1,19 @@
 from stack import Stack
 
 class PDAConfiguration:
+    STUCK_STATE = float('-inf')
     def __init__(self, state, stack):
         self.state = state
         self.stack = stack
     
     def __str__(self):
         return f'<PDAConfiguration state={self.state}, stack={str(self.stack)}>'
+    
+    def stuck(self):
+        return PDAConfiguration(PDAConfiguration.STUCK_STATE, self.stack)
+    
+    def is_stuck(self):
+        return self.state == PDAConfiguration.STUCK_STATE
 
 
 class PDARule:
@@ -66,11 +73,21 @@ class DPDA:
         return self.current_configuration.state in self.accept_states
 
     def read_character(self, character):
-        self.current_configuration = rulebook.next_configuration(self.current_configuration_(), character)
+        self.current_configuration = self.next_configuration(character)
     
     def read_string(self, string):
         for char in string:
-            self.read_character(char)
+            if not self.is_stuck():
+                self.read_character(char) 
+        
+    def next_configuration(self, character):
+        if self.rulebook.applies_to(self.current_configuration_(), character):
+            return self.rulebook.next_configuration(self.current_configuration_(), character)
+        else:
+            return self.current_configuration.stuck()
+    
+    def is_stuck(self):
+        return self.current_configuration.is_stuck()
 
 
 class DPDADesign:
@@ -138,14 +155,15 @@ if __name__ == "__main__":
     print(dpda.current_configuration)
     assert str(dpda.current_configuration) == "<PDAConfiguration state=2, stack=<Stack (b)b$>>"
 
-    dpda.read_string('))()')
-    print(dpda.accepting())
-    assert dpda.accepting()
-    print(dpda.current_configuration)
-    assert str(dpda.current_configuration) == "<PDAConfiguration state=1, stack=<Stack ($)>>"
-
     print('-' * 20)
     dpda_design = DPDADesign(1, '$', [1], rulebook)
     assert dpda_design.accepts('(((((((())))))))')
     assert dpda_design.accepts('()(())(())((()))')
     assert not dpda_design.accepts('(()(()(()()(()()))()')
+
+    print('-' * 20)
+    dpda = DPDA(PDAConfiguration(1, Stack(['$'])), [1], rulebook)
+    dpda.read_string('())')
+    assert not dpda.accepting()
+    assert dpda.is_stuck()
+    assert not dpda_design.accepts('())')
