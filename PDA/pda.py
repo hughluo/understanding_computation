@@ -24,7 +24,7 @@ class PDARule:
         self.pop_character = pop_character
         self.push_character = push_character
 
-    def applies_to(self, configuration, character):
+    def is_applies_to(self, configuration, character):
         return self.state == configuration.state and self.pop_character == configuration.stack.top() and \
             self.character == character
     
@@ -45,14 +45,14 @@ class DPDARulebook:
     
     def rule_for(self, configuration, character):
         for rule in self.rules:
-            if rule.applies_to(configuration, character):
+            if rule.is_applies_to(configuration, character):
                 return rule
     
-    def applies_to(self, configuration, character):
+    def is_applies_to(self, configuration, character):
         return self.rule_for(configuration, character) is not None
     
     def follow_free_moves(self, configuration):
-        if self.applies_to(configuration, None):
+        if self.is_applies_to(configuration, None):
             return self.follow_free_moves(self.next_configuration(configuration, None))
         else:
             return configuration
@@ -81,7 +81,7 @@ class DPDA:
                 self.read_character(char) 
         
     def next_configuration(self, character):
-        if self.rulebook.applies_to(self.current_configuration_(), character):
+        if self.rulebook.is_applies_to(self.current_configuration_(), character):
             return self.rulebook.next_configuration(self.current_configuration_(), character)
         else:
             return self.current_configuration.stuck()
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     print('-' * 20)
     rule = PDARule(1, '(', 2, '$', ['b', '$'])
     configuration = PDAConfiguration(1, Stack(['$']))
-    print(rule.applies_to(configuration, '('))  # True
+    print(rule.is_applies_to(configuration, '('))  # True
     print(rule.follow(configuration))
     
     print('-' * 20)
