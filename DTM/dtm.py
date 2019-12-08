@@ -71,6 +71,9 @@ class DTMRulebook:
         for rule in self.rules:
             if rule.is_applies_to(configuration):
                 return rule
+    
+    def is_applies_to(self, configuration):
+        return self.rule_for(configuration) is not None
 
 
 class DTM:
@@ -83,11 +86,14 @@ class DTM:
         return self.current_configuration.state in self.accept_states
     
     def step(self):
-        self.current_configuration = rulebook.next_configuration(self.current_configuration)
+        self.current_configuration = self.rulebook.next_configuration(self.current_configuration)
     
     def run(self):
-        while not self.is_accepting():
+        while not self.is_accepting() and not self.is_stuck():
             self.step()
+        
+    def is_stuck(self):
+        return not self.is_accepting() and not self.rulebook.is_applies_to(self.current_configuration)
 
 if __name__ == "__main__":
 
@@ -130,4 +136,61 @@ if __name__ == "__main__":
     assert not dtm.is_accepting()
     dtm.run()
     assert str(dtm.current_configuration) == '<TMConfiguration state=3, tape=<Tape 110(0)_>>'
+    assert dtm.is_accepting()
+
+    tape = Tape(['1', '2', '1'], '1', [], '_')
+    dtm = DTM(TMConfiguration(1, tape), [3], rulebook)
+    dtm.run()
+    assert not dtm.is_accepting()
+    assert dtm.is_stuck()
+    assert str(dtm.current_configuration) == '<TMConfiguration state=1, tape=<Tape 1(2)00>>'
+
+    # A Turing machine for recognizing strings like 'aaabbbccc', 'aabbcc'
+    test_rulebook = DTMRulebook([
+        # state 1: scan right looking for a
+        TMRule(1, 'X', 1, 'X', 'right'), # skip X
+        TMRule(1, 'a', 2, 'X', 'right'), # cross out a, go to state 2
+        TMRule(1, '_', 6, '_', 'left'),  # find blank, go to state 6 (accept)
+
+        # state 2: scan right looking for b
+        TMRule(2, 'a', 2, 'a', 'right'), # skip a
+        TMRule(2, 'X', 2, 'X', 'right'), # skip X
+        TMRule(2, 'b', 3, 'X', 'right'), # cross out b, go to state 3
+
+        # state 3: scan right looking for c
+        TMRule(3, 'b', 3, 'b', 'right'), # skip b
+        TMRule(3, 'X', 3, 'X', 'right'), # skip X
+        TMRule(3, 'c', 4, 'X', 'right'),  # cross out c, go to state 4
+        
+        # state 4: scan right looking for end of string
+        TMRule(4, 'c', 4, 'c', 'right'), # skip c
+        TMRule(4, '_', 5, '_', 'left'),  # find blank, go to state 5
+
+        # state 5: scan left looking for beginning of string
+        TMRule(5, 'a', 5, 'a', 'left'),  # skip a
+        TMRule(5, 'b', 5, 'b', 'left'),  # skip b
+        TMRule(5, 'c', 5, 'c', 'left'),  # skip c
+        TMRule(5, 'X', 5, 'X', 'left'),  # skip X
+        TMRule(5, '_', 1, '_', 'right'), # find blank, go to state 1
+    ])
+
+    test_tape = Tape([], 'a', ['a', 'a', 'b', 'b', 'b', 'c', 'c', 'c'], '_')
+    assert str(test_tape) == '<Tape (a)aabbbccc>'
+    dtm = DTM(TMConfiguration(1, test_tape), [6], test_rulebook)
+    for i in range(10):
+        dtm.step()
+    assert str(dtm.current_configuration) == '<TMConfiguration state=5, tape=<Tape XaaXbbXc(c)_>>'
+    
+    for i in range(25):
+        dtm.step()
+    assert str(dtm.current_configuration) == '<TMConfiguration state=5, tape=<Tape _XXa(X)XbXXc_>>'
+    
+    dtm.run()
+    assert dtm.is_accepting()
+    assert str(dtm.current_configuration) == '<TMConfiguration state=6, tape=<Tape _XXXXXXXX(X)_>>'
+
+
+    test_tape = Tape([], 'a', ['a', 'b', 'b', 'c', 'c'], '_')
+    dtm = DTM(TMConfiguration(1, test_tape), [6], test_rulebook)
+    dtm.run()
     assert dtm.is_accepting()
