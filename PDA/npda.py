@@ -1,5 +1,5 @@
 from stack import Stack
-from pda import PDARule, PDAConfiguration 
+from dpda import PDARule, PDAConfiguration 
 from time import sleep
 
 class NPDARulebook:
@@ -57,7 +57,22 @@ class NPDA:
         for char in string:
             self.read_character(char)
 
-
+class NPDADesign:
+    def __init__(self, start_state, bottom_character, accept_states, rulebook):
+        self.start_state = start_state
+        self.bottom_character = bottom_character
+        self.accept_states = accept_states
+        self.rulebook = rulebook
+    
+    def is_accepts(self, string):
+        npda = self.to_dpda()
+        npda.read_string(string)
+        return npda.is_accepting()
+    
+    def to_dpda(self):
+        start_stack = Stack([self.bottom_character])
+        start_configuration = PDAConfiguration(self.start_state, start_stack)
+        return NPDA(set([start_configuration]), self.accept_states, self.rulebook)
 
 if __name__ == "__main__":
     rulebook = NPDARulebook([
@@ -82,3 +97,9 @@ if __name__ == "__main__":
     assert not npda.is_accepting()
     npda.read_string('a')
     assert npda.is_accepting()
+
+    npda_design = NPDADesign(1, '$', [3], rulebook)
+    assert npda_design.is_accepts('abba')
+    assert npda_design.is_accepts('babbaabbab')
+    assert not npda_design.is_accepts('abb')
+    assert not npda_design.is_accepts('baabaa')
