@@ -6,6 +6,12 @@ class PDAConfiguration:
         self.state = state
         self.stack = stack
     
+    def __eq__(self, other):
+        return self.state == other.state and self.stack == other.stack
+    
+    def __hash__(self):
+        return hash(hash(self.state) + hash(self.stack))
+    
     def __str__(self):
         return f'<PDAConfiguration state={self.state}, stack={str(self.stack)}>'
     
@@ -167,3 +173,8 @@ if __name__ == "__main__":
     assert not dpda.is_accepting()
     assert dpda.is_stuck()
     assert not dpda_design.is_accepts('())')
+
+    print('-' * 20)
+    c1 = PDAConfiguration(1, Stack(['$']))
+    c2 = PDAConfiguration(1, Stack(['$']))
+    assert c1 == c2

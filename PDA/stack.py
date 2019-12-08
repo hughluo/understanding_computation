@@ -2,7 +2,13 @@ class Stack:
     """Purely functional non-destructive stack"""
     def __init__(self, list_):
         self.stk = [e for e in list_]
+
+    def __eq__(self, other):
+        return self.stk == other.stk
     
+    def __hash__(self):
+        return hash(str(self))
+
     def __str__(self):
         rest = ''.join((char for char in self.stk[1:]))
         return f'<Stack ({self.top()}){rest}>'
