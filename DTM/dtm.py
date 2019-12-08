@@ -31,6 +31,9 @@ class TMConfiguration:
     def __init__(self, state, tape):
         self.state = state
         self.tape = tape
+    
+    def __str__(self):
+        return f'<TMConfiguration state={self.state}, tape={str(self.tape)}>'
 
 
 class TMRule:
@@ -42,7 +45,20 @@ class TMRule:
         self.direction = direction
     
     def is_applies_to(self, configuration):
-        return self.state == configuration.state and self.character == configuration.tape.middle 
+        return self.state == configuration.state and self.character == configuration.tape.middle
+    
+    def follow(self, configuration):
+        return TMConfiguration(self.next_state, self.next_tape(configuration))
+    
+    def next_tape(self, configuration):
+        written_tape = configuration.tape.write(self.write_character)
+        if self.direction == 'left':
+            return written_tape.move_head_left()
+        elif self.direction == 'right':
+            return written_tape.move_head_right()
+        else:
+            raise AttributeError(f'expected string \'left\' or \'right\' as direction, {self.direction} countered')
+    
 
 if __name__ == "__main__":
 
@@ -57,3 +73,5 @@ if __name__ == "__main__":
     assert rule.is_applies_to(TMConfiguration(1, Tape([], '0', [], '_')))
     assert not rule.is_applies_to(TMConfiguration(1, Tape([], '1', [], '_')))
     assert not rule.is_applies_to(TMConfiguration(2, Tape([], '0', [], '_')))
+
+    assert str(rule.follow(TMConfiguration(1, Tape([], '0', [], '_')))) == '<TMConfiguration state=2, tape=<Tape 1(_)>>'
