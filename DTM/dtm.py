@@ -58,6 +58,19 @@ class TMRule:
             return written_tape.move_head_right()
         else:
             raise AttributeError(f'expected string \'left\' or \'right\' as direction, {self.direction} countered')
+
+
+class DTMRulebook:
+    def __init__(self, rules):
+        self.rules = rules
+    
+    def next_configuration(self, configuration):
+        return self.rule_for(configuration).follow(configuration)
+    
+    def rule_for(self, configuration):
+        for rule in self.rules:
+            if rule.is_applies_to(configuration):
+                return rule
     
 
 if __name__ == "__main__":
@@ -75,3 +88,20 @@ if __name__ == "__main__":
     assert not rule.is_applies_to(TMConfiguration(2, Tape([], '0', [], '_')))
 
     assert str(rule.follow(TMConfiguration(1, Tape([], '0', [], '_')))) == '<TMConfiguration state=2, tape=<Tape 1(_)>>'
+
+    rulebook = DTMRulebook([
+        TMRule(1, '0', 2, '1', 'right'),
+        TMRule(1, '1', 1, '0', 'left'),
+        TMRule(1, '_', 2, '1', 'right'),
+        TMRule(2, '0', 2, '0', 'right'),
+        TMRule(2, '1', 2, '1', 'right'),
+        TMRule(2, '_', 3, '_', 'left'),
+    ])
+    configuration = TMConfiguration(1, tape)
+    assert str(configuration) == '<TMConfiguration state=1, tape=<Tape 101(1)>>'
+    configuration = rulebook.next_configuration(configuration)
+    assert str(configuration) == '<TMConfiguration state=1, tape=<Tape 10(1)0>>'
+    configuration = rulebook.next_configuration(configuration)
+    assert str(configuration) == '<TMConfiguration state=1, tape=<Tape 1(0)00>>'
+    configuration = rulebook.next_configuration(configuration)
+    assert str(configuration) == '<TMConfiguration state=2, tape=<Tape 11(0)0>>'
