@@ -71,7 +71,23 @@ class DTMRulebook:
         for rule in self.rules:
             if rule.is_applies_to(configuration):
                 return rule
+
+
+class DTM:
+    def __init__(self, current_configuration, accept_states, rulebook):
+        self.current_configuration = current_configuration
+        self.accept_states = accept_states
+        self.rulebook = rulebook
     
+    def is_accepting(self):
+        return self.current_configuration.state in self.accept_states
+    
+    def step(self):
+        self.current_configuration = rulebook.next_configuration(self.current_configuration)
+    
+    def run(self):
+        while not self.is_accepting():
+            self.step()
 
 if __name__ == "__main__":
 
@@ -105,3 +121,13 @@ if __name__ == "__main__":
     assert str(configuration) == '<TMConfiguration state=1, tape=<Tape 1(0)00>>'
     configuration = rulebook.next_configuration(configuration)
     assert str(configuration) == '<TMConfiguration state=2, tape=<Tape 11(0)0>>'
+
+    dtm = DTM(TMConfiguration(1, tape), [3], rulebook)
+    assert str(dtm.current_configuration) == '<TMConfiguration state=1, tape=<Tape 101(1)>>'
+    assert not dtm.is_accepting()
+    dtm.step()
+    assert str(dtm.current_configuration) == '<TMConfiguration state=1, tape=<Tape 10(1)0>>'
+    assert not dtm.is_accepting()
+    dtm.run()
+    assert str(dtm.current_configuration) == '<TMConfiguration state=3, tape=<Tape 110(0)_>>'
+    assert dtm.is_accepting()
