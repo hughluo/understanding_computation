@@ -1,5 +1,6 @@
-TRUE = lambda x : lambda y: x
+TRUE  = lambda x : lambda y: x
 FALSE = lambda x : lambda y: y
+IF    = lambda b : b
 
 def to_boolean(proc):
     return proc(True)(False)
